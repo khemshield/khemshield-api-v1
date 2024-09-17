@@ -4,8 +4,8 @@
   "description": "Server side for khemshield project",
   "main": "./dist/index.js",
   "engines": {
-    "node": "",
-    "npm":""
+    "node": "20.12.2",
+    "npm":"10.7.0"
   },
   "scripts": {
     "start": "ts-node ./app/app.ts",
