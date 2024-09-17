@@ -3,10 +3,12 @@ import { generateEventRegisterHTMLTemp } from "./mail_templates/events";
 
 type MailRecipientType = {
   email: string;
-  firstName: string;
+  html: string;
+  subject: string;
+  name?: string;
 };
 
-const sendEmail = async ({ email, firstName }: MailRecipientType) => {
+const sendEmail = async ({ email, html, subject, name }: MailRecipientType) => {
   const fromEmail = process.env.EMAIL!;
 
   const transporter = nodemailer.createTransport({
@@ -22,11 +24,11 @@ const sendEmail = async ({ email, firstName }: MailRecipientType) => {
   let mailOptions = {
     to: email,
     from: {
-      name: "Khemshield & Jidem Foundation",
+      name: name || "Khemshield",
       address: fromEmail,
     },
-    subject: "Empowerment Series 2024 by Khemshield & Jidem Foundation",
-    html: generateEventRegisterHTMLTemp({ firstName: firstName }),
+    subject,
+    html,
     // attachments: [
     //   {
     //     filename: "khemshield profile",

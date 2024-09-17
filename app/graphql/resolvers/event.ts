@@ -1,6 +1,7 @@
 import EventSubscriber from "../../models/eventUsers";
 import sendEmail from "../../emailService/sendEmail";
 import Joi from "joi";
+import { generateEventRegisterHTMLTemp } from "../../emailService/mail_templates/events";
 
 type ErrorInfoType = {
   code: number;
@@ -46,7 +47,6 @@ export const eventResolvers = {
 
   eventRegister: async (args: EventRegistrationArgsType) => {
     const { regData } = args;
-    console.log("GOT TO EVENT REG");
     // Validate Inputs
     const validationObj = Joi.object({
       email: Joi.string().email(),
@@ -104,7 +104,9 @@ export const eventResolvers = {
 
       await sendEmail({
         email: regData.email,
-        firstName: regData.firstName,
+        html: generateEventRegisterHTMLTemp({ name: regData.firstName }),
+        subject: "Empowerment Series 2024 by Khemshield & Jidem Foundation",
+        name: "Khemshield & Jidem Foundation",
       });
 
       return regData;

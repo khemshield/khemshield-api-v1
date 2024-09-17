@@ -3,7 +3,7 @@ import express from "express";
 import { graphqlHTTP } from "express-graphql";
 import { GraphQLFormattedError } from "graphql";
 import connectDB from "./db";
-import { CustomError } from "./graphql/resolvers/events";
+import { CustomError } from "./graphql/resolvers/event";
 import appResolvers from "./graphql/resolvers/rootResolver";
 import appSchema from "./graphql/schemas/rootSchema";
 import cors from "cors";
@@ -38,11 +38,13 @@ app.use(
         return error;
       }
 
+      if (!originalError.errorInfo) throw error;
+
       // Custom error formatting
       return {
         message: error.message,
         extensions: {
-          status: originalError?.errorInfo.code || 500, // Include the code from the custom error
+          status: originalError.errorInfo.code || 500, // Include the code from the custom error
         },
       };
     },

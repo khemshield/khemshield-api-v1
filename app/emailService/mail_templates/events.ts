@@ -1,9 +1,7 @@
-export const generateEventRegisterHTMLTemp = (option: {
-  firstName?: string;
-}) => {
+export const generateEventRegisterHTMLTemp = (option: { name?: string }) => {
   return `
     <h4>
-        Dear ${option.firstName || "user"},
+        Dear ${option.name || "user"},
     </h4>
     <p>
       Thank you for registering for the Empowerment Series 2024: Empowering Warriors with On-Demand Skills for Stress-Free Remote Work, hosted by Khemshield in collaboration with the Jidem Foundation.
@@ -30,10 +28,10 @@ export const generateEventRegisterHTMLTemp = (option: {
       If you have any questions or need further information, feel free to reach out.
     </p>
 
-    <p>
-        Best regards,
+    <p style="margin-bottom:0">
+      Best regards,
     </p>
-    <p>
+    <p style="margin:0">
         Khemshield Team,
     </p>
 `;
