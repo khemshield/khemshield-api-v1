@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Server side for khemshield project",
   "main": "./dist/index.js",
+  "engines": {
+    "node": "",
+    "npm":""
+  },
   "scripts": {
     "start": "ts-node ./app/app.ts",
     "dev": "nodemon ./app/app.ts"
