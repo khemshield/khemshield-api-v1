@@ -1,0 +1,42 @@
+{
+  "name": "khemshield-backend",
+  "version": "1.0.0",
+  "description": "Server side for khemshield project",
+  "main": "./dist/index.js",
+  "scripts": {
+    "start": "ts-node ./app/app.ts",
+    "dev": "nodemon ./app/app.ts"
+  },
+  "keywords": [
+    "Training",
+    "Solutions",
+    "Projects",
+    "Consultation",
+    "Cybersecurity",
+    "Mobile",
+    "Applications",
+    "Web",
+    "Applicationns"
+  ],
+  "author": "Khem",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.5.5",
+    "@types/nodemailer": "^6.4.15",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.0.0",
+    "express-graphql": "^0.12.0",
+    "graphql": "^15.3.0",
+    "joi": "^17.13.3",
+    "mongoose": "^8.6.2",
+    "nodemailer": "^6.9.15"
+  }
+}
