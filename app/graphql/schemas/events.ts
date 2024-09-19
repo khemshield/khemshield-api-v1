@@ -18,7 +18,8 @@ export const eventType = `
         phone: String!
         firstName: String!
         lastName: String!
-        address: String
+        state: String!
+        address: String!
     }
 `;
 

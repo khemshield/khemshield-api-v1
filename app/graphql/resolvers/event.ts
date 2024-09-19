@@ -1,4 +1,4 @@
-import EventSubscriber from "../../models/eventUsers";
+import EventSubscriber from "../../models/eventSubcribers";
 import sendEmail from "../../emailService/sendEmail";
 import Joi from "joi";
 import { generateEventRegisterHTMLTemp } from "../../emailService/mail_templates/events";
@@ -59,8 +59,8 @@ export const eventResolvers = {
         }),
       firstName: Joi.string().required(),
       lastName: Joi.string().required(),
-      address: Joi.string().optional(),
-      // state: Joi.string().optional(),
+      address: Joi.string().required(),
+      state: Joi.string().required(),
       // city: Joi.string().optional(),
       event: Joi.string().required(),
     });
@@ -71,7 +71,7 @@ export const eventResolvers = {
       firstName: regData.firstName,
       lastName: regData.lastName,
       address: regData.address,
-      // state: regData.state,
+      state: regData.state,
       // city: regData.city,
       event: "1",
     });
