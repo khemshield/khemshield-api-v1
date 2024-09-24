@@ -17,7 +17,7 @@ export const generateEventRegisterHTMLTemp = (option: { name?: string }) => {
       <li>End Date: 5th Oct 2024</li>
       <li>Certification Day: 19th Oct 2024 (Physical)</li>
       <li>Focus Areas: Cybersecurity and Web Development for Remote Work</li>
-      <li>Venue: Google Meet (You will receive the link to join each day)</li>
+      <li>Venue Google Meet: You will receive the link to join each day. However, if you joined the program after September 24th, feel free to use the following details to join the sessions:</li>
     </ul>
 
     <h4>
