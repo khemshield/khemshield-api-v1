@@ -2,25 +2,8 @@ import EventSubscriber from "../../models/eventSubcribers";
 import sendEmail from "../../emailService/sendEmail";
 import Joi from "joi";
 import { generateEventRegisterHTMLTemp } from "../../emailService/mail_templates/events";
-
-type ErrorInfoType = {
-  code: number;
-};
-
-export class CustomError extends Error {
-  errorInfo: ErrorInfoType;
-
-  constructor(message: string, errorInfo: ErrorInfoType) {
-    super(message);
-    this.errorInfo = errorInfo;
-
-    // Ensure the name of the error is the same as the class name
-    this.name = this.constructor.name;
-
-    // Capture the stack trace
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
+import { CustomError } from "../errors";
+import sendEmailsInBatches from "../../emailService/sendEmailsInBatches";
 
 type EventRegistrationType = {
   email: string;
@@ -117,5 +100,29 @@ export const eventResolvers = {
 
       throw customError;
     }
+  },
+
+  sendEmailToSubcribers: async (args: { emailString: string }) => {
+    const eventSubscribers = await EventSubscriber.find({});
+
+    const usersToReceiveEmail = eventSubscribers.map(
+      ({ email, firstName }) => ({
+        email,
+        name: firstName,
+      })
+    );
+
+    await sendEmailsInBatches(
+      {
+        subject: "Important Update: Event Platform Change",
+        html: args.emailString,
+      },
+      usersToReceiveEmail,
+      1
+    );
+
+    return {
+      message: "ok",
+    };
   },
 };

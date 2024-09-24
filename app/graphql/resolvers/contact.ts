@@ -1,7 +1,7 @@
 import Joi from "joi";
 import Contact from "../../models/contact";
 import sendEmail from "../../emailService/sendEmail";
-import { CustomError } from "./event";
+import { CustomError } from "../errors";
 import { generateContactHTMLTemp } from "../../emailService/mail_templates/contact";
 
 type ContactType = {

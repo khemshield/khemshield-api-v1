@@ -3,7 +3,7 @@ import express from "express";
 import { graphqlHTTP } from "express-graphql";
 import { GraphQLFormattedError } from "graphql";
 import connectDB from "./db";
-import { CustomError } from "./graphql/resolvers/event";
+import { CustomError } from "./graphql/errors";
 import appResolvers from "./graphql/resolvers/rootResolver";
 import appSchema from "./graphql/schemas/rootSchema";
 import cors from "cors";

@@ -1,5 +1,4 @@
-import nodemailer from "nodemailer";
-import { generateEventRegisterHTMLTemp } from "./mail_templates/events";
+import mailTransporter from "./transporter";
 
 type MailRecipientType = {
   email: string;
@@ -9,39 +8,29 @@ type MailRecipientType = {
 };
 
 const sendEmail = async ({ email, html, subject, name }: MailRecipientType) => {
-  const fromEmail = process.env.EMAIL!;
+  const fromEmail = process.env.EMAIL;
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST, // SMTP server address
-    port: 465, // SMTP server port (usually 465 for secure, 587 for non-secure)
-    secure: true, // True for 465, false for other ports
-    auth: {
-      user: fromEmail,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  if (fromEmail) {
+    const mailOptions = {
+      to: email,
+      from: {
+        name: name || "Khemshield",
+        address: fromEmail,
+      },
+      subject,
+      html,
+    };
 
-  let mailOptions = {
-    to: email,
-    from: {
-      name: name || "Khemshield",
-      address: fromEmail,
-    },
-    subject,
-    html,
-    // attachments: [
-    //   {
-    //     filename: "khemshield profile",
-    //     path: `./khemshield_profile.pdf`, // Stream or file path
-    //   },
-    // ],
-  };
-
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: " + info.response);
-  } catch (error) {
-    console.log("SENDING EMAIL FAILED", email, error);
+    try {
+      const info = await mailTransporter({
+        host: process.env.EMAIL_HOST!,
+        pass: process.env.EMAIL_PASS!,
+        user: process.env.EMAIL!,
+      }).sendMail(mailOptions);
+      console.log("Email sent: " + info.response);
+    } catch (error) {
+      console.log("SENDING EMAIL FAILED", email, error);
+    }
   }
 };
 

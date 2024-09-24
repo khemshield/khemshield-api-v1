@@ -16,8 +16,18 @@ export const generateEventRegisterHTMLTemp = (option: { name?: string }) => {
       <li>Start Date: 24th Sept 2024</li>
       <li>End Date: 5th Oct 2024</li>
       <li>Certification Day: 19th Oct 2024 (Physical)</li>
-      <li>Venue: Zoom (You will receive the link to join each day)</li>
       <li>Focus Areas: Cybersecurity and Web Development for Remote Work</li>
+      <li>Venue: Google Meet (You will receive the link to join each day)</li>
+    </ul>
+
+    <h4>
+      Joining Details:
+    </h4>
+    
+    <ul>
+      <li>Join with Google Meet: https://meet.google.com/bqh-utfq-zsn</li>
+      <li>Join by phone: dial +27 10 823 1266 and enter this PIN: 795 268 802# </li>
+      <li>More phone numbers: https://tel.meet/bqh-utfq-zsn?hs=5</li>
     </ul>
 
     <p>
@@ -32,7 +42,55 @@ export const generateEventRegisterHTMLTemp = (option: { name?: string }) => {
       Best regards,
     </p>
     <p style="margin:0">
-        Khemshield Team,
+      Khemshield Team.
     </p>
 `;
 };
+
+export const generateEventSwitchUpdateHTMLTemp = (option: {
+  name?: string;
+  htmlString?: string;
+}) => {
+  return `
+    <h4>
+      Dear ${option.name || "user"},
+    </h4>
+    
+    ${option.htmlString}
+`;
+};
+
+// export const generateEventSwitchUpdateHTMLTemp = (option: {
+//   name?: string;
+// }) => {
+//   return `
+//     <h4>
+//       Dear ${option.name || "user"},
+//     </h4>
+//     <p>
+//       Thank you for registering for our upcoming Digital Skills Training event! We’re thrilled by the overwhelming response and have exceeded our initial target number of participants.
+//     </p>
+//     <p>
+//       Based on survey feedback, many participants find Google Meet more accessible. Therefore, to ensure everyone can join comfortably, we are switching the event platform from Zoom to Google Meet. Please find the updated event details below:
+//     </p>
+
+//     <ul>
+//       <li>🗓️ Event Dates: 24th September - 5th October</li>
+//       <li>📍 Platform: Google Meet (the meeting link will be shared daily)</li>
+//     </ul>
+
+//     <p>
+//       We’re excited to have you with us! If you have any questions, feel free to reach out.
+//     </p>
+
+//     <p style="margin-bottom:0">
+//       Best regards,
+//     </p>
+//     <p style="margin:0">
+//       Abdul Kareem Adamu,
+//     </p>
+//     <p style="margin:0">
+//       CTO at Khemshield
+//     </p>
+// `;
+// };

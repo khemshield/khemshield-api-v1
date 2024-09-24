@@ -11,6 +11,10 @@ export const eventType = `
         firstName: String!
         lastName: String!
     }
+
+    type MessageType {
+        message: String!
+    }
     
     input EventRegistrationInput {
         event: ID!
@@ -25,6 +29,7 @@ export const eventType = `
 
 export const eventQueries = `
     events: EventType
+    sendEmailToSubcribers(emailString: String!): MessageType
 `;
 
 export const eventMutations = `
