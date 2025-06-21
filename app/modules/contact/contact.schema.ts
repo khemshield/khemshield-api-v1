@@ -1,4 +1,5 @@
 export const contactType = `
+    
     type ContactType {
         _id: ID!
         email: String! 

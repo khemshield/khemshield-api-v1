@@ -1,9 +1,9 @@
-import EventSubscriber from "../../models/eventSubcribers";
-import sendEmail from "../../emailService/sendEmail";
+import EventSubscriber from "./eventSubcribers";
+import sendEmail from "../../utils/emailService/sendEmail";
 import Joi from "joi";
-import { generateEventRegisterHTMLTemp } from "../../emailService/mail_templates/events";
-import { CustomError } from "../errors";
-import sendEmailsInBatches from "../../emailService/sendEmailsInBatches";
+import { generateEventRegisterHTMLTemp } from "../../utils/emailService/mail_templates/events";
+import { CustomError } from "../../utils/errors";
+import sendEmailsInBatches from "../../utils/emailService/sendEmailsInBatches";
 
 type EventRegistrationType = {
   email: string;

@@ -1,8 +1,8 @@
 import Joi from "joi";
-import Contact from "../../models/contact";
-import sendEmail from "../../emailService/sendEmail";
-import { CustomError } from "../errors";
-import { generateContactHTMLTemp } from "../../emailService/mail_templates/contact";
+import Contact from "./contact";
+import sendEmail from "../../utils/emailService/sendEmail";
+import { CustomError } from "../../utils/errors";
+import { generateContactHTMLTemp } from "../../utils/emailService/mail_templates/contact";
 
 type ContactType = {
   fullName: string;
