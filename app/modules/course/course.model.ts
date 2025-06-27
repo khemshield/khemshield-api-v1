@@ -16,7 +16,8 @@ export enum CourseLevel {
   Advanced = "advance",
 }
 
-export enum DurationFrequency {
+export enum DurationUnit {
+  Day = "day",
   Week = "week",
   Month = "month",
 }
@@ -57,13 +58,13 @@ export interface ICourseCurriculum {
 export interface ICourse extends Document {
   title: string;
   description: string;
-  category: Types.ObjectId;
+  category: string;
   topic: string;
   language: string;
   level: CourseLevel;
   duration: {
-    value: number;
-    frequency: DurationFrequency;
+    length: number;
+    unit: DurationUnit;
   };
   thumbnail: string;
   trailer?: string;
@@ -71,6 +72,7 @@ export interface ICourse extends Document {
   targetAudience: string[];
   requirements: string[];
   curriculum: ICourseCurriculum;
+  leadInstructor: Types.ObjectId;
   instructors: Types.ObjectId[];
   slug: string;
   version: number;
@@ -105,25 +107,34 @@ const curriculumSchema = new Schema<ICourseCurriculum>({
 const courseSchema = new Schema<ICourse>(
   {
     title: { type: String, unique: true, required: true },
+
     description: { type: String, required: true },
-    category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+
+    category: { type: String, required: true },
+
     topic: { type: String, required: true },
+
     language: { type: String, default: "english" },
+
     level: {
       type: String,
       enum: Object.values(CourseLevel),
       required: true,
     },
+
     duration: {
-      value: { type: Number, required: true },
-      frequency: {
+      length: { type: Number, required: true },
+      unit: {
         type: String,
-        enum: Object.values(DurationFrequency),
+        enum: Object.values(DurationUnit),
         required: true,
       },
     },
+
     thumbnail: { type: String, required: true },
+
     trailer: String,
+
     objectives: {
       type: [String],
       validate: [
@@ -131,6 +142,7 @@ const courseSchema = new Schema<ICourse>(
         `Max ${MAX_OBJECTIVES} objectives allowed.`,
       ],
     },
+
     targetAudience: {
       type: [String],
       validate: [
@@ -138,6 +150,7 @@ const courseSchema = new Schema<ICourse>(
         `Max ${MAX_TARGET_AUDIENCE} target audience entries allowed.`,
       ],
     },
+
     requirements: {
       type: [String],
       validate: [
@@ -145,22 +158,27 @@ const courseSchema = new Schema<ICourse>(
         `Max ${MAX_REQUIREMENTS} requirements allowed.`,
       ],
     },
+
     curriculum: curriculumSchema,
+
+    leadInstructor: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
     instructors: {
       type: [Schema.Types.ObjectId],
       ref: "User",
-      required: true,
+      default: [],
       validate: [
         {
-          validator: (arr: Types.ObjectId[]) => arr.length >= 1,
-          message: "At least one instructor is required",
-        },
-        {
-          validator: (arr: Types.ObjectId[]) => arr.length <= 3,
-          message: "A course can have at most 3 instructors",
+          validator: (arr: Types.ObjectId[]) => arr.length <= 2,
+          message: "At most 2 instructors allowed",
         },
       ],
     },
+
     // ---------- Additional Info ----------
     slug: {
       type: String,
@@ -179,7 +197,7 @@ const courseSchema = new Schema<ICourse>(
       type: String,
       enum: Object.values(CourseStatus),
       default: CourseStatus.Draft,
-      // Current state of the course: draft, pending_review (submitted), published rejected, etc.
+      // Current state of the course: draft, pending_review (submitted), published, rejected, etc.
     },
 
     visibility: {

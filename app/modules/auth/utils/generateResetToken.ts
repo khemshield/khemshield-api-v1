@@ -1,12 +1,17 @@
-import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import { PasswordResetToken } from "../reset-token.model";
+import { Types } from "mongoose";
 
-const RESET_PASSWORD_SECRET = process.env.RESET_PASSWORD_SECRET!; // create in your .env
+export const generatePasswordResetToken = async (userId: Types.ObjectId) => {
+  const rawToken = crypto.randomBytes(32).toString("hex");
 
-export function generateResetToken(
-  userId: string,
-  expiresIn: "1hr" | "15m" = "15m"
-) {
-  return jwt.sign({ userId: userId }, RESET_PASSWORD_SECRET, {
-    expiresIn: expiresIn,
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+  await PasswordResetToken.create({
+    user: userId,
+    token: rawToken,
+    expiresAt,
   });
-}
+
+  return rawToken;
+};

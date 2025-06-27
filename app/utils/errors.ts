@@ -16,3 +16,13 @@ export class CustomError extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 }
+
+export class AppError extends Error {
+  statusCode: number;
+
+  constructor(message: string, statusCode = 500) {
+    super(message);
+    this.statusCode = statusCode;
+    this.name = "AppError";
+  }
+}

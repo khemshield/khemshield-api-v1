@@ -16,6 +16,7 @@ import { customFormatErrorFn } from "./middlewares/errorFormatter";
 import { apiRateLimiter } from "./middlewares/rateLimiter";
 import { graphqlRateLimiter } from "./middlewares/graphqlRateLimiter";
 import { API_VERSION } from "./config/contants";
+import corsMiddleware from "./config/cor.config";
 
 // Routes
 import categoryRoutes from "./modules/category/category.routes";
@@ -29,6 +30,7 @@ const app = express();
 // DB CONNECTION
 connectDB();
 
+app.use(corsMiddleware);
 app.use(cookieParser());
 app.use(express.json());
 app.use(helmet());

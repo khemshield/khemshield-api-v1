@@ -89,7 +89,7 @@ export const eventResolvers = {
         email: regData.email,
         html: generateEventRegisterHTMLTemp({ name: regData.firstName }),
         subject: "Empowerment Series 2024 by Khemshield & Jidem Foundation",
-        name: "Khemshield & Jidem Foundation",
+        sender: "Khemshield & Jidem Foundation",
       });
 
       return regData;

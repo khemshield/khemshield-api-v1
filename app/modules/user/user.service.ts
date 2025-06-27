@@ -31,3 +31,24 @@ export const reactivateAccount = async (userId: Types.ObjectId) => {
   await user.save();
   return user;
 };
+
+export const searchUsers = async (query: string, role: string, limit = 10) => {
+  const regex = new RegExp(query, "i");
+
+  const users = await User.find({
+    roles: role,
+    $or: [
+      { firstName: regex },
+      { lastName: regex },
+      // { email: regex },
+    ],
+    accountStatus: "active",
+  })
+    .select("firstName lastName email roles")
+    .limit(limit)
+    .populate("instructorProfile", "avatar") // only select fields needed
+    .populate("adminProfile")
+    .populate("studentProfile");
+
+  return users;
+};

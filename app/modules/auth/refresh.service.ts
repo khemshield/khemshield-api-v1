@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import RefreshToken from "./refresh.model";
+import RefreshToken from "./refresh-token.model";
 
 export const saveRefreshToken = async ({
   userId,
@@ -15,4 +15,9 @@ export const saveRefreshToken = async ({
   });
 
   await tokenDoc.save();
+};
+
+export const deleteRefreshToken = async (refreshToken: string) => {
+  // Remove refresh token from DB
+  await RefreshToken.deleteOne({ token: refreshToken });
 };

@@ -1,13 +1,13 @@
-// controllers/user.controller.ts
 import { Request, Response } from "express";
-import { registerUser } from "../auth/auth.service";
-import { UserRole } from "../user/user.model";
 import { Types } from "mongoose";
-import { generateTempPassword } from "./utils/generateTempPassword";
-import sendEmail from "../../utils/emailService/sendEmail";
+import { CLIENT_BASE_URL } from "../../config/contants";
 import { generateResetHtmlTemp } from "../../utils/emailService/mail_templates/generateResetHtmlTemp";
-import { generateResetToken } from "../auth/utils/generateResetToken";
-import { API_VERSION } from "../../config/contants";
+import sendEmail from "../../utils/emailService/sendEmail";
+import { registerUser } from "../auth/auth.service";
+import { generatePasswordResetToken } from "../auth/utils/generateResetToken";
+import { UserRole } from "../user/user.model";
+import { searchUsers } from "../user/user.service";
+import { generateTempPassword } from "./utils/generateTempPassword";
 
 export const createUserController = async (req: Request, res: Response) => {
   try {
@@ -34,26 +34,52 @@ export const createUserController = async (req: Request, res: Response) => {
       firstName,
       lastName,
       email,
-      password: generateTempPassword(),
       mustChangePassword: true, // force change,
       phone,
       roles,
       createdBy: currentUser._id as Types.ObjectId,
     });
 
-    const resetLink = `${
-      process.env.API_BASE_URL + API_VERSION
-    }/auth/reset-password?token=${generateResetToken(newUser._id!.toString())}`;
+    const resetLink = `${CLIENT_BASE_URL}/reset-password?token=${await generatePasswordResetToken(
+      newUser._id as Types.ObjectId
+    )}`;
 
     await sendEmail({
       email,
-      subject: "Reset Your Password",
-      html: generateResetHtmlTemp({ resetLink }),
+      subject: "Set up your account",
+      html: generateResetHtmlTemp({ resetLink, reason: "setup" }),
     });
 
-    res.status(201).json(newUser);
+    res.status(201).json({
+      message: "User created. A password setup email has been sent.",
+      user: newUser,
+    });
   } catch (err: any) {
     console.error("Create user error:", err);
     res.status(500).json({ message: err.message || "User creation failed" });
+  }
+};
+
+export const searchUsersController = async (req: Request, res: Response) => {
+  try {
+    const { q = "", role } = req.query;
+
+    if (!role || typeof role !== "string") {
+      return res.status(400).json({ message: "Role is required" });
+    }
+
+    const trimmedQuery = (q as string).trim();
+    if (!trimmedQuery) {
+      return res.json([]); // return empty results for empty query
+    }
+
+    const regex = new RegExp(trimmedQuery, "i");
+
+    const users = await searchUsers(trimmedQuery, role);
+
+    res.json(users);
+  } catch (error: any) {
+    console.error("Search error:", error);
+    res.status(500).json({ message: error.message || "Search failed" });
   }
 };

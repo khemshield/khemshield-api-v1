@@ -1,20 +1,27 @@
+import { APP_NAME } from "../../config/contants";
+import { AppError } from "../errors";
 import mailTransporter from "./transporter";
 
 type MailRecipientType = {
   email: string;
   html: string;
   subject: string;
-  name?: string;
+  sender?: string;
 };
 
-const sendEmail = async ({ email, html, subject, name }: MailRecipientType) => {
+const sendEmail = async ({
+  email,
+  html,
+  subject,
+  sender,
+}: MailRecipientType) => {
   const fromEmail = process.env.EMAIL;
 
   if (fromEmail) {
     const mailOptions = {
       to: email,
       from: {
-        name: name || "Khemshield",
+        name: sender || APP_NAME,
         address: fromEmail,
       },
       subject,
@@ -28,8 +35,9 @@ const sendEmail = async ({ email, html, subject, name }: MailRecipientType) => {
         user: process.env.EMAIL!,
       }).sendMail(mailOptions);
       console.log("Email sent: " + info.response);
-    } catch (error) {
+    } catch (error: any) {
       console.log("SENDING EMAIL FAILED", email, error);
+      throw new AppError(error.message || "SENDING EMAIL FAILED", 502);
     }
   }
 };

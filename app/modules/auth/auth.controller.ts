@@ -1,16 +1,17 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { JwtPayloadWithUserId } from "../../@types/jwt";
 import {
   loginUser,
   registerUser,
   requestPasswordReset,
+  resetPassword,
 } from "../auth/auth.service";
 import { UserRole } from "../user/user.model";
+import { deleteRefreshToken } from "./refresh.service";
 import { generateAccessToken } from "./utils/generateAccessToken";
-import { JwtPayloadWithUserId } from "../../@types/jwt";
-import { resetPassword } from "../auth/auth.service";
-import bcrypt from "bcrypt";
-import User from "../user/user.model";
+import { AppError } from "../../utils/errors";
+import { isProduction } from "../../config/contants";
 
 export const registerUserController = async (req: Request, res: Response) => {
   try {
@@ -20,7 +21,6 @@ export const registerUserController = async (req: Request, res: Response) => {
       firstName,
       lastName,
       email,
-      password,
       phone,
       roles: [UserRole.Student],
     });
@@ -34,12 +34,13 @@ export const registerUserController = async (req: Request, res: Response) => {
 
 // Handles user login, generating access and refresh tokens.
 export async function loginController(req: Request, res: Response) {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
   try {
     const { accessToken, refreshToken, mustChangePassword } = await loginUser(
       email,
-      password
+      password,
+      role
     );
 
     if (mustChangePassword) {
@@ -52,17 +53,23 @@ export async function loginController(req: Request, res: Response) {
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       maxAge: 15 * 60 * 1000,
+      secure: isProduction,
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: isProduction,
     });
 
     res.json({ accessToken, refreshToken });
   } catch (err: any) {
     console.error("Login error:", err);
-    res.status(500).json({ message: err.message || "Login failed" });
+
+    const status = err.statusCode || 500; // <-- support AppError statusCode
+    const message = err.message || "Login failed";
+
+    res.status(status).json({ message });
   }
 }
 
@@ -84,6 +91,7 @@ export const refreshTokenController = async (req: Request, res: Response) => {
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       maxAge: 15 * 60 * 1000,
+      secure: isProduction,
     });
 
     return res.json({ accessToken });
@@ -116,7 +124,7 @@ export const resetPasswordController = async (req: Request, res: Response) => {
 
     const message = await resetPassword(token, newPassword);
 
-    res.status(200).json({ message });
+    res.status(200).json(message);
   } catch (err: any) {
     console.error("Reset password error:", err.message);
     return res.status(500).json({ message: err.message || "Server error" });
@@ -126,3 +134,24 @@ export const resetPasswordController = async (req: Request, res: Response) => {
 export const meController = async (req: Request, res: Response) => {
   res.json(req.user);
 };
+
+// Handles user logout, deleting token in the database.
+export async function logoutController(req: Request, res: Response) {
+  const refreshToken =
+    req.cookies.refreshToken ||
+    req.body.refreshToken ||
+    req.headers["x-refresh-token"];
+
+  if (!refreshToken) {
+    return res.status(400).json({ message: "No refresh token provided" });
+  }
+
+  // Remove refresh token from DB
+  await deleteRefreshToken(refreshToken);
+
+  // Clear cookies if they exist
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+
+  return res.json({ message: "Logged out successfully" });
+}

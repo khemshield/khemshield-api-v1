@@ -6,6 +6,7 @@ import {
   meController,
   requestPasswordResetController,
   resetPasswordController,
+  logoutController,
 } from "./auth.controller";
 import { registerUserSchema } from "./validators/register.validator";
 import { validatator } from "../../middlewares/validatator";
@@ -23,10 +24,10 @@ router.post("/login", loginController);
 router.post("/refresh-token", refreshTokenController);
 router.post("/request-password-reset", requestPasswordResetController);
 router.post("/reset-password", resetPasswordController);
-router.post("/me", requireAuth, meController);
+router.get("/me", requireAuth, meController);
+router.post("/logout", logoutController);
 
 // You can later add:
-// router.post("/logout", logoutController);
 // router.post("/forgot-password", forgotPasswordController);
 
 export default router;

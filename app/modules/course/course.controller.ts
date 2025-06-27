@@ -9,17 +9,30 @@ import {
   courseExists,
 } from "./course.service";
 
+import { CourseSchema } from "./course.schema";
+
 // Create Course
 export const createCourseController = async (req: Request, res: Response) => {
   try {
-    const { title } = req.body;
+    const parsed = CourseSchema.safeParse(req.body); // Validated payload
+
+    if (!parsed.success) {
+      return res.status(400).json({ errors: parsed.error.errors });
+    }
+
+    const { category, topic } = parsed.data;
 
     // Optional: Prevent duplicates
-    const exists = await courseExists(title);
+    const exists = await courseExists({ topic, category });
     if (exists)
-      return res.status(409).json({ message: "Course already exists" });
+      return res.status(409).json({ message: "Course already being managed" });
 
-    const course = await createCourse(req.body);
+    const course = await createCourse({
+      ...req.body,
+      // Securely inject leadInstructor from authenticated user
+      leadInstructor: req.user!._id,
+    });
+
     res.status(201).json(course);
   } catch (err) {
     console.error("Create Course Error:", err);
@@ -86,4 +99,23 @@ export const deleteCourseController = async (req: Request, res: Response) => {
   } catch (err) {
     res.status(500).json({ message: "Error deleting course" });
   }
+};
+
+// Check Course Existence (optional, e.g. before creating)
+export const checkCourseExistenceController = async (
+  req: Request,
+  res: Response
+) => {
+  const { topic, category } = req.body;
+  if (!topic || !category) {
+    return res.status(400).json({ message: "Topic and category are required" });
+  }
+
+  const result = await courseExists({ topic, category });
+
+  if (result.exists) {
+    return res.status(409).json({ message: "Course already exists", result });
+  }
+
+  res.status(200).json({ message: "Course does not exist", exists: false });
 };

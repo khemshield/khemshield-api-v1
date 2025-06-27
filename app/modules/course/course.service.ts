@@ -1,4 +1,7 @@
+import e from "express";
 import Course, { ICourse } from "./course.model";
+import { IUser } from "../user/user.model";
+import { IInstructorProfile } from "../user/instructorProfile.model";
 
 // Create course
 export const createCourse = async (data: Partial<ICourse>) => {
@@ -73,6 +76,38 @@ export const deleteCourse = async (id: string) => {
 };
 
 // Check if a course with same title or topic exists (optional for validation)
-export const courseExists = async (title: string) => {
-  return await Course.findOne({ title });
+export const courseExists = async (query: {
+  topic: string;
+  category: string;
+}) => {
+  const course = await Course.findOne(query).populate<{
+    leadInstructor: IUser & { instructorProfile: IInstructorProfile };
+  }>({
+    path: "leadInstructor",
+    select: "firstName lastName email instructorProfile",
+    populate: {
+      path: "instructorProfile",
+      select: "avatar", // get only what you need
+    },
+  });
+
+  if (!course) {
+    return { exists: false };
+  }
+
+  const user = course.leadInstructor;
+  const instructorProfile = user.instructorProfile as IInstructorProfile;
+
+  return {
+    exists: true,
+    _id: course._id,
+    title: course.title,
+    topic: course.topic,
+    instructorCount: course.instructors.length,
+    leadInstructor: {
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+      avatar: instructorProfile?.avatar || null,
+    },
+  };
 };

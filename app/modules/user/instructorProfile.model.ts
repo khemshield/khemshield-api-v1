@@ -1,4 +1,4 @@
-import { Schema, model, Types, Document } from "mongoose";
+import { Document, model, Schema, Types } from "mongoose";
 import { generateProfileId } from "./utils/generateProfileId";
 
 export interface IInstructorProfile extends Document {
@@ -9,7 +9,7 @@ export interface IInstructorProfile extends Document {
   certifications?: string[];
   availability?: string;
   phone?: string;
-
+  avatar?: string;
   socials: {
     linkedin?: string;
     website?: string;
@@ -31,6 +31,7 @@ const instructorProfileSchema = new Schema<IInstructorProfile>(
     },
     instructorId: { type: String, unique: true },
     bio: String,
+    avatar: String,
     phone: { type: String },
     expertise: [String],
     socials: {
