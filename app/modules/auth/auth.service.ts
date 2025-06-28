@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { Types } from "mongoose";
 import { API_VERSION, CLIENT_BASE_URL } from "../../config/contants";
-import { generateResetHtmlTemp } from "../../utils/emailService/mail_templates/generateResetHtmlTemp";
+import { generateResetHTMLTemp } from "../../utils/emailService/mail_templates/generateResetHTMLTemp";
 import sendEmail from "../../utils/emailService/sendEmail";
 import AdminProfile from "../user/adminProfile.model";
 import InstructorProfile from "../user/instructorProfile.model";
@@ -179,6 +179,6 @@ export const requestPasswordReset = async (email: string) => {
   await sendEmail({
     email: user.email,
     subject: "Reset Your Password",
-    html: generateResetHtmlTemp({ resetLink, recipientName: user.firstName }),
+    html: generateResetHTMLTemp({ resetLink, recipientName: user.firstName }),
   });
 };

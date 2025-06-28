@@ -1,28 +1,79 @@
-import e from "express";
-import Course, { ICourse } from "./course.model";
-import { IUser } from "../user/user.model";
+import { Types } from "mongoose";
 import { IInstructorProfile } from "../user/instructorProfile.model";
-
+import { IUser } from "../user/user.model";
+import Course, { CourseStatus, ICourse, Visibility } from "./course.model";
+import { generateCourseCreatedEmailHTMLTemp } from "../../utils/emailService/mail_templates/generateCourseCreatedEmailHTMLTemp";
+import sendEmail from "../../utils/emailService/sendEmail";
+import { CLIENT_BASE_URL } from "../../config/contants";
 // Create course
-export const createCourse = async (data: Partial<ICourse>) => {
+export const createCourse = async (data: Partial<ICourse>, user: IUser) => {
   const course = new Course(data);
+
+  await sendEmail({
+    email: user.email,
+    subject: `Course Created: ${course.title}`,
+    html: generateCourseCreatedEmailHTMLTemp({
+      courseTitle: course.title,
+      topic: course.topic,
+      category: course.category,
+      thumbnail: course.thumbnail, // Make sure it's a full URL
+      createdAt: course.createdAt?.toISOString() || new Date().toISOString(),
+      courseLink: `${CLIENT_BASE_URL}/courses/${course.slug}`,
+      userName: `${user.firstName} ${user.lastName}`,
+    }),
+  });
+
   return await course.save();
 };
 
 // Get all courses
-export const getAllCourses = async () => {
-  return await Course.find().populate("category").populate("instructors");
+export const getAllCourses = async (filters?: {
+  status?: CourseStatus;
+  visibility?: Visibility;
+}) => {
+  const query: any = {};
+
+  if (filters?.status) query.status = filters.status;
+  if (filters?.visibility) query.visibility = filters.visibility;
+
+  return await Course.find(query).select("-curriculum"); // if needed to avoid heavy payloads;
+};
+
+// Get courses by user (for lead instructor or instructors)
+export const getCoursesByUser = async ({
+  userId,
+  filters,
+}: {
+  userId: Types.ObjectId;
+  filters?: {
+    status?: string;
+    visibility?: string;
+  };
+}) => {
+  const query: any = {
+    $or: [{ leadInstructor: userId }, { instructors: userId }],
+  };
+
+  if (filters?.status) query.status = filters.status;
+  if (filters?.visibility) query.visibility = filters.visibility;
+
+  return Course.find(query).populate(
+    "leadInstructor",
+    "firstName lastName email"
+  );
 };
 
 // Get course by ID
 export const getCourseById = async (id: string) => {
-  return await Course.findById(id).populate("category").populate("instructors");
+  return await Course.findById(id)
+    .populate("leadInstructor")
+    .populate("instructors");
 };
 
 // Get course by slug (for SEO/public display)
 export const getCourseBySlug = async (slug: string) => {
   return await Course.findOne({ slug })
-    .populate("category")
+    .populate("leadInstructor")
     .populate("instructors");
 };
 
@@ -80,33 +131,37 @@ export const courseExists = async (query: {
   topic: string;
   category: string;
 }) => {
-  const course = await Course.findOne(query).populate<{
-    leadInstructor: IUser & { instructorProfile: IInstructorProfile };
-  }>({
-    path: "leadInstructor",
-    select: "firstName lastName email instructorProfile",
-    populate: {
-      path: "instructorProfile",
-      select: "avatar", // get only what you need
-    },
-  });
+  const course = await Course.findOne(query)
+    .populate<{
+      leadInstructor: IUser & { instructorProfile: IInstructorProfile };
+    }>({
+      path: "leadInstructor",
+      select: "firstName lastName email instructorProfile",
+      populate: {
+        path: "instructorProfile",
+        select: "avatar", // get only what you need
+      },
+    })
+    .populate("instructors", "email");
 
   if (!course) {
     return { exists: false };
   }
 
-  const user = course.leadInstructor;
-  const instructorProfile = user.instructorProfile as IInstructorProfile;
+  const leadIntructor = course.leadInstructor;
+  const instructorProfile =
+    leadIntructor.instructorProfile as IInstructorProfile;
 
   return {
     exists: true,
     _id: course._id,
     title: course.title,
     topic: course.topic,
-    instructorCount: course.instructors.length,
+    instructors: course.instructors,
     leadInstructor: {
-      name: `${user.firstName} ${user.lastName}`,
-      email: user.email,
+      _id: leadIntructor._id,
+      name: `${leadIntructor.firstName} ${leadIntructor.lastName}`,
+      email: leadIntructor.email,
       avatar: instructorProfile?.avatar || null,
     },
   };

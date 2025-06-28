@@ -1,4 +1,4 @@
-export const generateResetHtmlTemp = (option: {
+export const generateResetHTMLTemp = (option: {
   resetLink: string;
   recipientName?: string;
   reason?: "reset" | "setup"; // Optional reason

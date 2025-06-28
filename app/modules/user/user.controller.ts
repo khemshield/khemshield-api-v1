@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Types } from "mongoose";
 import { CLIENT_BASE_URL } from "../../config/contants";
-import { generateResetHtmlTemp } from "../../utils/emailService/mail_templates/generateResetHtmlTemp";
+import { generateResetHTMLTemp } from "../../utils/emailService/mail_templates/generateResetHTMLTemp";
 import sendEmail from "../../utils/emailService/sendEmail";
 import { registerUser } from "../auth/auth.service";
 import { generatePasswordResetToken } from "../auth/utils/generateResetToken";
@@ -47,7 +47,7 @@ export const createUserController = async (req: Request, res: Response) => {
     await sendEmail({
       email,
       subject: "Set up your account",
-      html: generateResetHtmlTemp({ resetLink, reason: "setup" }),
+      html: generateResetHTMLTemp({ resetLink, reason: "setup" }),
     });
 
     res.status(201).json({

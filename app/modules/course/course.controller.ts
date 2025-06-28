@@ -7,9 +7,12 @@ import {
   updateCourse,
   deleteCourse,
   courseExists,
+  getCoursesByUser,
 } from "./course.service";
 
 import { CourseSchema } from "./course.schema";
+import { CourseStatus, Visibility } from "./course.model";
+import { Types } from "mongoose";
 
 // Create Course
 export const createCourseController = async (req: Request, res: Response) => {
@@ -27,11 +30,16 @@ export const createCourseController = async (req: Request, res: Response) => {
     if (exists)
       return res.status(409).json({ message: "Course already being managed" });
 
-    const course = await createCourse({
-      ...req.body,
-      // Securely inject leadInstructor from authenticated user
-      leadInstructor: req.user!._id,
-    });
+    const currentUser = req.user!;
+
+    const course = await createCourse(
+      {
+        ...req.body,
+        // Securely inject leadInstructor from authenticated user
+        leadInstructor: currentUser._id,
+      },
+      currentUser
+    );
 
     res.status(201).json(course);
   } catch (err) {
@@ -43,10 +51,39 @@ export const createCourseController = async (req: Request, res: Response) => {
 // Get All Courses
 export const getCoursesController = async (_: Request, res: Response) => {
   try {
-    const courses = await getAllCourses();
+    const courses = await getAllCourses({
+      status: CourseStatus.Published, // Only fetch published courses
+      visibility: Visibility.Public, // Only fetch public courses
+    });
     res.json(courses);
   } catch (err) {
     res.status(500).json({ message: "Failed to get courses" });
+  }
+};
+
+// Get My Courses (for authenticated user)
+export const getMyCoursesController = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { status, visibility } = req.query;
+
+    const courses = await getCoursesByUser({
+      userId: user._id as Types.ObjectId,
+      filters: {
+        status: status as CourseStatus | undefined,
+        visibility: visibility as Visibility | undefined,
+      },
+    });
+
+    res.json(courses);
+  } catch (err) {
+    console.error("Error fetching user courses:", err);
+    res.status(500).json({ message: "Failed to get your courses" });
   }
 };
 
