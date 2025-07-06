@@ -1,10 +1,12 @@
 import { Schema, model, Document, Types } from "mongoose";
 import { generateProfileId } from "./utils/generateProfileId";
+import { IAddress } from "./user.model";
 
 export interface IAdminProfile extends Document {
   user: Types.ObjectId;
-  adminId: string;
+  idCardNo: string;
   phone?: string;
+  address?: IAddress;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -18,20 +20,20 @@ const adminProfileSchema = new Schema<IAdminProfile>(
       unique: true,
     },
     phone: String,
-    adminId: {
+    address: {
+      street: String,
+      state: String,
+      city: String,
+      country: String,
+      postalCode: String,
+    },
+    idCardNo: {
       type: String,
       unique: true,
     },
   },
   { timestamps: true }
 );
-
-// Auto-generate adminId before saving
-adminProfileSchema.pre("save", async function (next) {
-  if (!this.isNew || this.adminId) return next();
-  this.adminId = await generateProfileId("admin");
-  next();
-});
 
 const AdminProfile = model<IAdminProfile>("AdminProfile", adminProfileSchema);
 export default AdminProfile;

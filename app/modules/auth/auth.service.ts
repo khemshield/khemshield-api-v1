@@ -6,13 +6,14 @@ import sendEmail from "../../utils/emailService/sendEmail";
 import AdminProfile from "../user/adminProfile.model";
 import InstructorProfile from "../user/instructorProfile.model";
 import StudentProfile from "../user/studentProfile.model";
-import User, { IUser, UserRole } from "../user/user.model";
+import User, { IAddress, IUser, UserRole } from "../user/user.model";
 import { saveRefreshToken } from "./refresh.service";
 import { PasswordResetToken } from "./reset-token.model";
 import { generateAccessToken } from "./utils/generateAccessToken";
 import { generateRefreshToken } from "./utils/generateRefreshToken";
 import { generatePasswordResetToken } from "./utils/generateResetToken";
 import { AppError } from "../../utils/errors";
+import { generateProfileId } from "../user/utils/generateProfileId";
 
 interface RegisterInput {
   firstName: string;
@@ -21,40 +22,42 @@ interface RegisterInput {
   roles?: UserRole[];
   phone?: string; // Required for studentProfile
   mustChangePassword?: boolean;
+  address?: IAddress;
   createdBy?: Types.ObjectId;
+}
+
+interface RegisterResult {
+  user: Omit<IUser, "password">;
+  studentIdCardNo?: string;
 }
 
 export const registerUser = async (
   data: RegisterInput
-): Promise<Omit<IUser, "password">> => {
+): Promise<RegisterResult> => {
   const {
     email,
     roles = [UserRole.Student],
     firstName,
     lastName,
     phone,
+    address,
   } = data;
 
-  // 1. Check if email exists
   const exists = await User.findOne({ email });
   if (exists) throw new AppError("Email already in use", 409);
 
-  // 2. Create initial user
-  const newUser = new User({
-    firstName,
-    lastName,
-    email,
-    roles,
-  });
+  const newUser = new User({ firstName, lastName, email, roles });
 
-  // 3. Create profile(s)
+  const studentIdCardNo = await generateProfileId("student");
+  const instructorIdCardNo = await generateProfileId("instructor");
+  const adminIdCardNo = await generateProfileId("admin");
+
   if (roles.includes(UserRole.Student)) {
-    if (!phone)
-      throw new AppError("Phone number is required for students", 400);
-
     const studentProfile = await StudentProfile.create({
       user: newUser._id,
       phone,
+      address,
+      idCardNo: studentIdCardNo,
     });
 
     newUser.studentProfile = studentProfile._id as Types.ObjectId;
@@ -64,6 +67,8 @@ export const registerUser = async (
     const instructorProfile = await InstructorProfile.create({
       user: newUser._id,
       phone,
+      address,
+      idCardNo: instructorIdCardNo,
     });
 
     newUser.instructorProfile = instructorProfile._id as Types.ObjectId;
@@ -73,15 +78,21 @@ export const registerUser = async (
     const adminProfile = await AdminProfile.create({
       user: newUser._id,
       phone,
+      address,
+      idCardNo: adminIdCardNo,
     });
 
     newUser.adminProfile = adminProfile._id as Types.ObjectId;
   }
 
-  // 4. Save user
   await newUser.save();
 
-  return newUser;
+  return {
+    user: newUser,
+    studentIdCardNo: roles.includes(UserRole.Student)
+      ? studentIdCardNo
+      : undefined,
+  };
 };
 
 export const loginUser = async (

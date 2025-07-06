@@ -1,10 +1,18 @@
+import { AppError } from "../../utils/errors";
 import User, { AccountStatus } from "./user.model";
 import { Types } from "mongoose";
+
+export const getAllUsers = async () => {
+  const user = await User.find().select("-password -mustChangePassword");
+  if (!user) throw new AppError("User not found");
+
+  return user;
+};
 
 // Deactivate (User-initiated: "I want to close my account")
 export const deactivateAccount = async (userId: Types.ObjectId) => {
   const user = await User.findById(userId);
-  if (!user) throw new Error("User not found");
+  if (!user) throw new AppError("User not found");
 
   user.accountStatus = AccountStatus.Deactivated;
 
@@ -15,7 +23,7 @@ export const deactivateAccount = async (userId: Types.ObjectId) => {
 // Suspend (Admin-initiated)
 export const suspendAccount = async (userId: Types.ObjectId) => {
   const user = await User.findById(userId);
-  if (!user) throw new Error("User not found");
+  if (!user) throw new AppError("User not found");
 
   user.accountStatus = AccountStatus.Suspended;
   await user.save();
@@ -25,7 +33,7 @@ export const suspendAccount = async (userId: Types.ObjectId) => {
 // Reactivate (Admin-initiated)
 export const reactivateAccount = async (userId: Types.ObjectId) => {
   const user = await User.findById(userId);
-  if (!user) throw new Error("User not found");
+  if (!user) throw new AppError("User not found");
 
   user.accountStatus = AccountStatus.Active;
   await user.save();

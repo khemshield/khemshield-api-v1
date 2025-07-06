@@ -6,6 +6,7 @@ import { UserRole } from "../modules/user/user.model";
  * Middleware to restrict access based on user role(s)
  * @param roles One or more roles that are allowed
  */
+
 export const checkRole = (...roles: UserRole[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;

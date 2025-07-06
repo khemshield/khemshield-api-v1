@@ -12,6 +12,14 @@ export enum AccountStatus {
   Deactivated = "deactivated",
 }
 
+export interface IAddress {
+  street?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+}
+
 export interface IUser extends Document {
   firstName: string;
   lastName: string;
@@ -21,11 +29,9 @@ export interface IUser extends Document {
   instructorProfile?: Types.ObjectId;
   studentProfile?: Types.ObjectId;
   adminProfile?: Types.ObjectId;
-
   createdBy?: Types.ObjectId;
   mustChangePassword: boolean;
   accountStatus: AccountStatus;
-
   createdAt?: Date;
   updatedAt?: Date;
 }

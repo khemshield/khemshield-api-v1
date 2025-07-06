@@ -10,7 +10,7 @@ import {
   getCoursesByUser,
 } from "./course.service";
 
-import { CourseSchema } from "./course.schema";
+import { CourseSchema } from "./course.validation";
 import { CourseStatus, Visibility } from "./course.model";
 import { Types } from "mongoose";
 

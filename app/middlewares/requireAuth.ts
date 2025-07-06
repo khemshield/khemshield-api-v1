@@ -13,9 +13,6 @@ export const requireAuth = async (
     const authHeader = req.headers["authorization"];
     const token = authHeader?.split(" ")[1] || req.cookies.accessToken;
 
-    console.log("req.cookies.accessToken: ", req.cookies.accessToken);
-    console.log("authHeader: ", authHeader);
-
     if (!token) {
       return res.status(401).json({ message: "Not authenticated" });
     }

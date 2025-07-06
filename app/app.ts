@@ -24,6 +24,9 @@ import storageRoutes from "./modules/storage/storage.routes";
 import courseRoutes from "./modules/course/course.routes";
 import authRoutes from "./modules/auth/auth.routes";
 import userRoutes from "./modules/user/user.routes";
+import predefinedCourseRoutes from "./modules/predefined-courses/predefinedCourse.routes";
+import paymentRoutes from "./modules/payment/payment.routes";
+import couponRoutes from "./modules/coupon/coupon.routes";
 
 const app = express();
 
@@ -35,6 +38,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(helmet());
 app.use(morgan("dev"));
+app.use(express.static("public"));
 
 // Routes
 app.use(`${API_VERSION}/api`, apiRateLimiter); // Apply to all /api routes
@@ -43,6 +47,9 @@ app.use(`${API_VERSION}/categories`, categoryRoutes);
 app.use(`${API_VERSION}/courses`, courseRoutes);
 app.use(`${API_VERSION}/auth`, authRoutes);
 app.use(`${API_VERSION}/users`, userRoutes);
+app.use(`${API_VERSION}/predefined-courses`, predefinedCourseRoutes);
+app.use(`${API_VERSION}/payment`, paymentRoutes);
+app.use(`${API_VERSION}/coupons`, couponRoutes);
 
 app.use(
   `${API_VERSION}/graphql`,

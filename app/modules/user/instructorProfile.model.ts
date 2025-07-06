@@ -1,14 +1,16 @@
 import { Document, model, Schema, Types } from "mongoose";
 import { generateProfileId } from "./utils/generateProfileId";
+import { IAddress } from "./user.model";
 
 export interface IInstructorProfile extends Document {
   user: Types.ObjectId;
-  instructorId: String;
+  idCardNo: String;
   bio?: string;
   expertise?: string[];
   certifications?: string[];
   availability?: string;
   phone?: string;
+  address?: IAddress;
   avatar?: string;
   socials: {
     linkedin?: string;
@@ -29,10 +31,17 @@ const instructorProfileSchema = new Schema<IInstructorProfile>(
       required: true,
       unique: true,
     },
-    instructorId: { type: String, unique: true },
+    idCardNo: { type: String, unique: true },
     bio: String,
     avatar: String,
     phone: { type: String },
+    address: {
+      street: String,
+      state: String,
+      city: String,
+      country: String,
+      postalCode: String,
+    },
     expertise: [String],
     socials: {
       linkedin: String,
@@ -48,13 +57,6 @@ const instructorProfileSchema = new Schema<IInstructorProfile>(
   },
   { timestamps: true }
 );
-
-// Auto-generate instructorId
-instructorProfileSchema.pre("save", async function (next) {
-  if (!this.isNew || this.instructorId) return next();
-  this.instructorId = await generateProfileId("instructor");
-  next();
-});
 
 const InstructorProfile = model<IInstructorProfile>(
   "InstructorProfile",

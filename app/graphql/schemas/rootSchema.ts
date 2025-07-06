@@ -13,15 +13,24 @@ import {
   categoryMutation,
   categoryQuery,
 } from "../../modules/category/category.schema";
+import {
+  predefinedCourseQuery,
+  PredefinedCourseType,
+} from "../../modules/predefined-courses/predefinedCourse.schema";
+import { courseQuery, courseType } from "../../modules/course/course.schema";
 
 const appSchema = buildSchema(`
     ${eventType}
     ${contactType}
     ${categoryType}
-
+    ${PredefinedCourseType}
+    ${courseType}
+    
     type RootQuery {
-        ${eventQueries}
-        ${categoryQuery}
+      ${eventQueries}
+      ${categoryQuery}
+      ${predefinedCourseQuery}
+      ${courseQuery}
     }
 
     type RootMutation {

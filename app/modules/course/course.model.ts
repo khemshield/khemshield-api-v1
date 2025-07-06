@@ -66,6 +66,9 @@ export interface ICourse extends Document {
     length: number;
     unit: DurationUnit;
   };
+  price: number;
+  createdFrom: Types.ObjectId;
+  isSystemGenerated: boolean;
   thumbnail: string;
   trailer?: string;
   objectives: string[];
@@ -74,6 +77,7 @@ export interface ICourse extends Document {
   curriculum: ICourseCurriculum;
   leadInstructor: Types.ObjectId;
   instructors: Types.ObjectId[];
+  discountPercentage: number;
   slug: string;
   version: number;
   status: CourseStatus;
@@ -130,8 +134,14 @@ const courseSchema = new Schema<ICourse>(
         required: true,
       },
     },
-
+    discountPercentage: { type: Number, max: 100, min: 0, default: 0 },
     thumbnail: { type: String, required: true },
+
+    price: { type: Number, required: true },
+
+    createdFrom: { type: Schema.Types.ObjectId, ref: "PredefinedCourse" },
+
+    isSystemGenerated: { type: Boolean, default: false },
 
     trailer: String,
 
@@ -164,7 +174,6 @@ const courseSchema = new Schema<ICourse>(
     leadInstructor: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
 
     instructors: {

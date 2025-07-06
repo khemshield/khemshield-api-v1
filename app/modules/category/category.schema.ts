@@ -1,15 +1,8 @@
 export const categoryType = `
-
-  type PredefinedCourseType {
-    title: String!
-    description: String
-  }
-
   type Category {
     _id: ID!
     name: String!
     description: String
-    predefinedCourses: [PredefinedCourseType]
     createdAt: String
   }
 
