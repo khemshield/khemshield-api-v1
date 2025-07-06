@@ -178,3 +178,36 @@ export const updateEnrollmentProgress = async (
   await enrollment.save();
   return enrollment;
 };
+
+export const getAllEnrollments = async (filters?: {
+  userId?: string;
+  courseId?: string;
+  status?: EnrollmentStatus;
+}) => {
+  const query: any = {};
+
+  if (filters?.userId) query.user = new Types.ObjectId(filters.userId);
+  if (filters?.courseId) query.itemRef = new Types.ObjectId(filters.courseId);
+  if (filters?.status) query.status = filters.status;
+
+  return Enrollment.find(query)
+    .populate("user", "firstName lastName email")
+    .populate("itemRef")
+    .sort({ createdAt: -1 });
+};
+
+export const getEnrollmentById = async (enrollmentId: string) => {
+  const enrollment = await Enrollment.findById(enrollmentId)
+    .populate("user", "firstName lastName email")
+    .populate("itemRef");
+
+  if (!enrollment) throw new Error("Enrollment not found");
+
+  return enrollment;
+};
+
+export const getEnrollmentsByUser = async (userId: string) => {
+  return Enrollment.find({ user: userId })
+    .populate("itemRef")
+    .sort({ createdAt: -1 });
+};

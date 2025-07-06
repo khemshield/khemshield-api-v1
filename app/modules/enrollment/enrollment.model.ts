@@ -19,10 +19,10 @@ export enum DeliveryMethod {
 }
 
 export enum EItemType {
-  Course = "course",
-  // Certificate = "certificate",
-  // Mentorship = "mentorship",
-  // Event = "event",
+  Course = "Course",
+  // Certificate = "Certificate",
+  // Mentorship = "Mentorship",
+  // Event = "Event",
 }
 
 export interface IEnrollment {
@@ -48,7 +48,11 @@ const enrollmentSchema = new Schema<IEnrollment>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     itemType: { type: String, enum: Object.values(EItemType), required: true },
-    itemRef: { type: Schema.Types.ObjectId, required: true },
+    itemRef: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      refPath: "itemType", // 👈 this tells Mongoose to use itemType to determine the model
+    },
     enrolledAt: { type: Date, default: Date.now },
     status: {
       type: String,

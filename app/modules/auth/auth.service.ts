@@ -36,17 +36,18 @@ export const registerUser = async (
 ): Promise<RegisterResult> => {
   const {
     email,
-    roles = [UserRole.Student],
     firstName,
     lastName,
     phone,
+    createdBy,
     address,
+    roles = [UserRole.Student],
   } = data;
 
   const exists = await User.findOne({ email });
   if (exists) throw new AppError("Email already in use", 409);
 
-  const newUser = new User({ firstName, lastName, email, roles });
+  const newUser = new User({ firstName, lastName, email, roles, createdBy });
 
   const studentIdCardNo = await generateProfileId("student");
   const instructorIdCardNo = await generateProfileId("instructor");

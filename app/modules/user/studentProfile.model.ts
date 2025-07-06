@@ -6,6 +6,7 @@ export interface IStudentProfile extends Document {
   idCardNo: string;
   phone: string;
   address?: IAddress;
+  avatar?: String;
 }
 
 const studentProfileSchema = new Schema<IStudentProfile>(
@@ -16,6 +17,7 @@ const studentProfileSchema = new Schema<IStudentProfile>(
       required: true,
       unique: true,
     },
+    avatar: String,
     phone: { type: String, required: true },
     address: {
       street: String,

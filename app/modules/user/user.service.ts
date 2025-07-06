@@ -9,6 +9,17 @@ export const getAllUsers = async () => {
   return user;
 };
 
+export const getUserById = async (id: string) => {
+  console.log("UserId: ", id);
+  const user = await User.findById({ _id: id })
+    .select("-password -mustChangePassword")
+    .populate("studentProfile adminProfile instructorProfile createdBy");
+
+  if (!user) throw new AppError("User not found");
+
+  return user;
+};
+
 // Deactivate (User-initiated: "I want to close my account")
 export const deactivateAccount = async (userId: Types.ObjectId) => {
   const user = await User.findById(userId);

@@ -51,7 +51,11 @@ export interface IPayment extends Document {
 
 const paymentItemSchema = new Schema<PaymentItem>({
   itemType: { type: String, required: true },
-  itemRef: { type: Schema.Types.ObjectId, required: true },
+  itemRef: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    refPath: "itemType", // 👈 this tells Mongoose to use itemType to determine the model
+  },
   name: { type: String, required: true },
   originalPrice: { type: Number, required: true },
   discountPercentage: { type: Number },

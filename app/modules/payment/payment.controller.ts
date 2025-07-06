@@ -1,8 +1,12 @@
 import { Request, Response } from "express";
 import { Types } from "mongoose";
-import { createManualPaymentAndEnroll } from "./payment.service";
+import {
+  createManualPaymentAndEnroll,
+  getPaymentsByUser,
+} from "./payment.service";
 import { CreatePaymentSchema } from "./payment.validation";
 import { DeliveryMethod } from "../enrollment/enrollment.model";
+import asyncHandler from "express-async-handler";
 
 export const recordManualPaymentController = async (
   req: Request,
@@ -52,3 +56,12 @@ export const recordManualPaymentController = async (
       .json({ message: (error as Error).message || "Failed to enroll" });
   }
 };
+
+// GET /api/payments/user/:userId
+export const fetchPaymentssByUser = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.params.userId;
+    const payments = await getPaymentsByUser(userId);
+    res.json({ data: payments });
+  }
+);

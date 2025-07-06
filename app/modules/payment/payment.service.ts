@@ -183,3 +183,9 @@ export const verifyAndApplyPayment = async ({
   await payment.save();
   return payment;
 };
+
+export const getPaymentsByUser = async (userId: string) => {
+  return await Payment.find({ user: userId })
+    .populate("items.itemRef", "title")
+    .sort({ createdAt: -1 });
+};

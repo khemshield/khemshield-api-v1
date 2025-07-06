@@ -15,7 +15,7 @@ type PaymentItemResolver = (args: {
 }) => Promise<ItemsPurchaseType>;
 
 export const paymentItemResolvers: Record<EItemType, PaymentItemResolver> = {
-  course: async ({
+  Course: async ({
     itemId,
     predefinedId,
     couponCode,

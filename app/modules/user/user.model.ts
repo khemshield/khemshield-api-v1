@@ -62,7 +62,7 @@ const userSchema = new Schema<IUser>(
       ref: "InstructorProfile",
     },
     studentProfile: { type: Schema.Types.ObjectId, ref: "StudentProfile" },
-    adminProfile: { type: Schema.Types.ObjectId, ref: "AminProfile" },
+    adminProfile: { type: Schema.Types.ObjectId, ref: "AdminProfile" },
   },
   { timestamps: true }
 );

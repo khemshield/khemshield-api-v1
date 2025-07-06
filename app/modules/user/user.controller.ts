@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Types } from "mongoose";
 import { registerUser } from "../auth/auth.service";
 import { UserRole } from "../user/user.model";
-import { getAllUsers, searchUsers } from "../user/user.service";
+import { getAllUsers, getUserById, searchUsers } from "../user/user.service";
 import { UserNotifier } from "./user.notifier";
 import { AppError } from "../../utils/errors";
 import { UserSchema } from "./user.schema";
@@ -59,7 +59,7 @@ export const createUserController = async (req: Request, res: Response) => {
 
     res.status(201).json({
       message: "User created. Relevant email(s) have been sent.",
-      user: newUser,
+      data: newUser,
     });
   } catch (err: any) {
     console.error("Create user error:", err);
@@ -92,11 +92,11 @@ export const searchUsersController = async (req: Request, res: Response) => {
       return res.json([]); // return empty results for empty query
     }
 
-    const regex = new RegExp(trimmedQuery, "i");
-
     const users = await searchUsers(trimmedQuery, role);
 
-    res.json(users);
+    res.json({
+      data: users,
+    });
   } catch (error: any) {
     console.error("Search error:", error);
     res.status(500).json({ message: error.message || "Search failed" });
@@ -105,10 +105,25 @@ export const searchUsersController = async (req: Request, res: Response) => {
 
 export const getUsersController = async (req: Request, res: Response) => {
   try {
-    const user = await getAllUsers();
-    return res.json(user);
+    const users = await getAllUsers();
+    return res.json({ data: users });
   } catch (error: any) {
     console.error("Search error:", error);
     res.status(500).json({ message: error.message || "Search failed" });
+  }
+};
+
+export const getUserController = async (req: Request, res: Response) => {
+  const userId = req.params.id;
+
+  if (!userId)
+    return res.status(400).json({ message: "Please provide user's id param" });
+
+  try {
+    const user = await getUserById(userId);
+    return res.json({ data: user });
+  } catch (error: any) {
+    console.error("Search error:", error);
+    res.status(500).json({ message: error.message || "Can not find user" });
   }
 };

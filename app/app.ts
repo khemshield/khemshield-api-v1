@@ -17,6 +17,7 @@ import { apiRateLimiter } from "./middlewares/rateLimiter";
 import { graphqlRateLimiter } from "./middlewares/graphqlRateLimiter";
 import { API_VERSION } from "./config/contants";
 import corsMiddleware from "./config/cor.config";
+import errorMiddleware from "./middlewares/error";
 
 // Routes
 import categoryRoutes from "./modules/category/category.routes";
@@ -27,6 +28,7 @@ import userRoutes from "./modules/user/user.routes";
 import predefinedCourseRoutes from "./modules/predefined-courses/predefinedCourse.routes";
 import paymentRoutes from "./modules/payment/payment.routes";
 import couponRoutes from "./modules/coupon/coupon.routes";
+import enrollmentRoutes from "./modules/enrollment/enrollment.routes";
 
 const app = express();
 
@@ -48,8 +50,9 @@ app.use(`${API_VERSION}/courses`, courseRoutes);
 app.use(`${API_VERSION}/auth`, authRoutes);
 app.use(`${API_VERSION}/users`, userRoutes);
 app.use(`${API_VERSION}/predefined-courses`, predefinedCourseRoutes);
-app.use(`${API_VERSION}/payment`, paymentRoutes);
+app.use(`${API_VERSION}/payments`, paymentRoutes);
 app.use(`${API_VERSION}/coupons`, couponRoutes);
+app.use(`${API_VERSION}/enrollments`, enrollmentRoutes);
 
 app.use(
   `${API_VERSION}/graphql`,
@@ -61,5 +64,8 @@ app.use(
     customFormatErrorFn,
   })
 );
+
+// Must come last – after all routes & GraphQL
+app.use(errorMiddleware);
 
 export default app;

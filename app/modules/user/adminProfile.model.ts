@@ -9,6 +9,7 @@ export interface IAdminProfile extends Document {
   address?: IAddress;
   createdAt?: Date;
   updatedAt?: Date;
+  avatar?: string;
 }
 
 const adminProfileSchema = new Schema<IAdminProfile>(
@@ -27,6 +28,7 @@ const adminProfileSchema = new Schema<IAdminProfile>(
       country: String,
       postalCode: String,
     },
+    avatar: String,
     idCardNo: {
       type: String,
       unique: true,
