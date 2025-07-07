@@ -36,7 +36,7 @@ export const ensureCourseFromPredefined = async (
     level: CourseLevel.BeginnerIntermediate,
     createdFrom: template._id,
     visibility: Visibility.Private,
-    status: CourseStatus.Pending, // System-generated, no instructor yet
+    status: CourseStatus.Draft, // System-generated, no instructor yet
     isSystemGenerated: true,
   });
 

@@ -7,6 +7,8 @@ import Course from "../../course/course.model";
 import { ensureCourseFromPredefined } from "../../course/utils/ensureCourseFromPredefined";
 import { EItemType } from "../../enrollment/enrollment.model";
 import { ItemsPurchaseType } from "../payment.service";
+import { resolvePerItemAmountPaid } from "./resolvePerItemAmountPaid";
+import { PaymentItemType } from "../payment.validation";
 
 type PaymentItemResolver = (args: {
   itemId?: Types.ObjectId;
@@ -25,9 +27,6 @@ export const paymentItemResolvers: Record<EItemType, PaymentItemResolver> = {
     couponCode?: string;
   }) => {
     let course;
-
-    console.log("itemId: ", itemId);
-    console.log("predefinedId: ", predefinedId);
 
     if (!itemId && !predefinedId) {
       throw new AppError("Either itemId or predefinedId is required");
@@ -62,6 +61,7 @@ export const paymentItemResolvers: Record<EItemType, PaymentItemResolver> = {
       originalPrice,
       discountPercentage: discount,
       finalPrice,
+      // amountPaid, will be set later
     };
   },
 
@@ -87,4 +87,44 @@ export const paymentItemResolvers: Record<EItemType, PaymentItemResolver> = {
   //     finalPrice: 1990,
   //   };
   // },
+};
+
+export interface PaymentItemWithFinalPrice {
+  finalPrice: number;
+  [key: string]: any; // allow other properties
+}
+
+export const attachAmountPaid = <T extends PaymentItemWithFinalPrice>(
+  items: T[],
+  totalPaid: number
+): (T & { amountPaid: number })[] => {
+  const perItemPaid = resolvePerItemAmountPaid(items, totalPaid);
+
+  return items.map((item, i) => ({
+    ...item,
+    amountPaid: perItemPaid[i],
+  }));
+};
+
+export const resolveItemsWithPayment = async (
+  items: PaymentItemType[],
+  couponCode: string | undefined,
+  amountPaid: number
+) => {
+  const rawItems = await Promise.all(
+    items.map(async (item) => {
+      const resolver = paymentItemResolvers[item.itemType];
+      if (!resolver) throw new Error(`Unsupported itemType: ${item.itemType}`);
+
+      return await resolver({
+        itemId: item.itemId ? new Types.ObjectId(item.itemId) : undefined,
+        predefinedId: item.predefinedId
+          ? new Types.ObjectId(item.predefinedId)
+          : undefined,
+        couponCode,
+      });
+    })
+  );
+
+  return attachAmountPaid(rawItems, amountPaid);
 };

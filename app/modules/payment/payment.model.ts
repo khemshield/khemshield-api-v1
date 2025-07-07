@@ -27,13 +27,15 @@ interface PaymentItem {
   originalPrice: number;
   discountPercentage?: number;
   finalPrice: number;
+  amountPaid: number;
 }
 
 export interface IPayment extends Document {
   user: Types.ObjectId;
   items: PaymentItem[];
   currency: string;
-  totalAmount: number;
+  totalAmount: number; // expected (due) amount
+  amountPaid: number; // actual amount paid by user
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   reference: string;
@@ -54,12 +56,13 @@ const paymentItemSchema = new Schema<PaymentItem>({
   itemRef: {
     type: Schema.Types.ObjectId,
     required: true,
-    refPath: "itemType", // 👈 this tells Mongoose to use itemType to determine the model
+    refPath: "itemType", // this tells Mongoose to use itemType to determine the model
   },
   name: { type: String, required: true },
   originalPrice: { type: Number, required: true },
   discountPercentage: { type: Number },
   finalPrice: { type: Number, required: true },
+  amountPaid: { type: Number, required: true },
 });
 
 const paymentSchema = new Schema<IPayment>(
@@ -67,7 +70,19 @@ const paymentSchema = new Schema<IPayment>(
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     items: [paymentItemSchema],
     currency: { type: String, required: true, default: "NGN" },
+
+    /**
+     * Represents the expected total to be paid.
+     * This is the sum of all item final prices (after discount).
+     * This is NOT the actual amount the user paid in this transaction.
+     */
     totalAmount: { type: Number, required: true },
+    /**
+     * Represents the actual amount the user paid in this transaction.
+     * This is used to distribute payment among enrollments.
+     */
+    amountPaid: { type: Number, required: true },
+
     paymentMethod: {
       type: String,
       enum: Object.values(PaymentMethod),

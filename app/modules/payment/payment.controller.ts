@@ -32,8 +32,6 @@ export const recordManualPaymentController = async (
     } = parsed.data;
     const adminUserId = req.user?._id;
 
-    console.log("amountPaid: ", amountPaid);
-
     const result = await createManualPaymentAndEnroll({
       user: new Types.ObjectId(user),
       recordedBy: adminUserId as Types.ObjectId,

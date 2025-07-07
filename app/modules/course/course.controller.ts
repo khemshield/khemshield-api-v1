@@ -13,6 +13,7 @@ import {
 import { CourseSchema } from "./course.validation";
 import { CourseStatus, Visibility } from "./course.model";
 import { Types } from "mongoose";
+import asyncHandler from "express-async-handler";
 
 // Create Course
 export const createCourseController = async (req: Request, res: Response) => {
@@ -87,6 +88,14 @@ export const getMyCoursesController = async (req: Request, res: Response) => {
   }
 };
 
+export const getCoursesByUserContoller = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const courses = await getCoursesByUser({ userId: new Types.ObjectId(id) });
+  res.json({ data: courses });
+});
+
+getCoursesByUser;
 // Get Course by ID
 export const getCourseByIdController = async (req: Request, res: Response) => {
   try {

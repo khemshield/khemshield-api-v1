@@ -5,7 +5,10 @@ import { DeliveryMethod, EItemType } from "../enrollment/enrollment.model";
 import { enrollUserToCourses } from "../enrollment/enrollment.service";
 import { PaymentItemType } from "./payment.validation";
 import { generatePaymentReference } from "./utils/generatePaymentReference";
-import { paymentItemResolvers } from "./utils/paymentItemResolvers";
+import {
+  paymentItemResolvers,
+  resolveItemsWithPayment,
+} from "./utils/paymentItemResolvers";
 import { AppError } from "../../utils/errors";
 import Enrollment from "../enrollment/enrollment.model";
 
@@ -25,6 +28,7 @@ type CreatePaymentInput = {
   recordedBy?: Types.ObjectId;
   couponCode?: string;
   currency?: string;
+  amountPaid: number;
 };
 
 // Generic reusable payment creation accepting resolved items
@@ -34,6 +38,7 @@ export const createPayment = async ({
   paymentMethod,
   recordedBy,
   couponCode,
+  amountPaid,
   currency = "NGN",
 }: CreatePaymentInput) => {
   const totalAmount = items.reduce((sum, item) => sum + item.finalPrice, 0);
@@ -44,6 +49,7 @@ export const createPayment = async ({
     items,
     currency,
     totalAmount,
+    amountPaid,
     paymentMethod,
     paymentStatus:
       paymentMethod === PaymentMethod.Manual
@@ -87,22 +93,11 @@ export const createManualPaymentAndEnroll = async ({
     ).values()
   );
 
-  const resolvedItems = await Promise.all(
-    uniqueItems.map(async (item) => {
-      const resolver = paymentItemResolvers[item.itemType];
-      if (!resolver) throw new Error(`Unsupported itemType: ${item.itemType}`);
-
-      return await resolver({
-        itemId: item.itemId ? new Types.ObjectId(item.itemId) : undefined,
-        predefinedId: item.predefinedId
-          ? new Types.ObjectId(item.predefinedId)
-          : undefined,
-        couponCode,
-      });
-    })
+  const resolvedItems = await resolveItemsWithPayment(
+    items,
+    couponCode,
+    amountPaid
   );
-
-  console.log("After resolvedItems is CALLED: ", resolvedItems);
 
   const totalFinalPrice = resolvedItems.reduce(
     (sum, item) => sum + item.finalPrice,
@@ -136,6 +131,7 @@ export const createManualPaymentAndEnroll = async ({
     recordedBy,
     couponCode,
     currency,
+    amountPaid,
   });
 
   // Course specific enrollment
@@ -186,6 +182,6 @@ export const verifyAndApplyPayment = async ({
 
 export const getPaymentsByUser = async (userId: string) => {
   return await Payment.find({ user: userId })
-    .populate("items.itemRef", "title")
+    .populate("items.itemRef recordedBy")
     .sort({ createdAt: -1 });
 };
