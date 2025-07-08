@@ -95,7 +95,6 @@ export const getCoursesByUserContoller = asyncHandler(async (req, res) => {
   res.json({ data: courses });
 });
 
-getCoursesByUser;
 // Get Course by ID
 export const getCourseByIdController = async (req: Request, res: Response) => {
   try {

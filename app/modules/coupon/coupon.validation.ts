@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EItemType } from "../enrollment/enrollment.model";
 
 export const CreateCouponSchema = z
   .object({
@@ -8,6 +9,8 @@ export const CreateCouponSchema = z
     usageLimit: z.number().int().positive().optional(),
     isActive: z.boolean().optional(),
     course: z.string().optional().nullable(), // allow global coupons
+    applicableItemType: z.nativeEnum(EItemType),
+    applicableItemId: z.string(),
   })
   .strict();
 

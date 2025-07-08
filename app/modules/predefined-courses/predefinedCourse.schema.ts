@@ -4,6 +4,7 @@ export const PredefinedCourseType = `
     title: String!
     description: String
     category: String
+    basePrice: Int
   }
 `;
 

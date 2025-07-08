@@ -3,7 +3,7 @@
 import { Types } from "mongoose";
 import { AppError } from "../../../utils/errors";
 import { validateCouponOrSkip } from "../../coupon/coupon.service";
-import Course from "../../course/course.model";
+import Course, { ICourse } from "../../course/course.model";
 import { ensureCourseFromPredefined } from "../../course/utils/ensureCourseFromPredefined";
 import { EItemType } from "../../enrollment/enrollment.model";
 import { ItemsPurchaseType } from "../payment.service";
@@ -26,7 +26,7 @@ export const paymentItemResolvers: Record<EItemType, PaymentItemResolver> = {
     predefinedId?: Types.ObjectId;
     couponCode?: string;
   }) => {
-    let course;
+    let course: ICourse | null = null;
 
     if (!itemId && !predefinedId) {
       throw new AppError("Either itemId or predefinedId is required");
@@ -40,28 +40,28 @@ export const paymentItemResolvers: Record<EItemType, PaymentItemResolver> = {
       course = await ensureCourseFromPredefined(predefinedId);
     }
 
-    console.log("course: ", course);
     if (!course) throw new AppError("Course not found");
 
     const originalPrice = course.price || 0;
     const courseDiscount = course.discountPercentage || 0;
-    const couponDiscount = await validateCouponOrSkip(
-      couponCode ?? "",
-      course._id as Types.ObjectId
-    );
+
+    const couponDiscount = await validateCouponOrSkip(couponCode ?? "", [
+      {
+        itemType: EItemType.Course,
+        itemId: course._id as Types.ObjectId,
+      },
+    ]);
 
     const discount = Math.max(courseDiscount, couponDiscount);
-
     const finalPrice = originalPrice - (originalPrice * discount) / 100;
 
     return {
       itemType: EItemType.Course,
-      itemRef: course._id as Types.ObjectId,
+      itemRef: course._id as Types.ObjectId, // explicitly assert type here
       name: course.title,
       originalPrice,
       discountPercentage: discount,
       finalPrice,
-      // amountPaid, will be set later
     };
   },
 

@@ -14,6 +14,10 @@ import {
 
 const router = Router();
 
+// Public coupon verification route (e.g. for UI "Apply Coupon" button)
+// @route /coupon/verify
+router.post("/verify", verifyCouponController);
+
 // Admin-only routes
 router.use(requireAuth, checkRole(UserRole.Admin));
 
@@ -23,8 +27,5 @@ router.get("/", getAllCouponsController);
 router.get("/:id", getCouponByIdController);
 router.put("/:id", updateCouponController);
 router.delete("/:id", deleteCouponController);
-
-// Public coupon verification route (e.g. for UI "Apply Coupon" button)
-router.get("/verify", verifyCouponController);
 
 export default router;

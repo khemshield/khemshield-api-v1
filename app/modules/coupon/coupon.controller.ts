@@ -1,3 +1,6 @@
+// ✅ Updated: Full Coupon Controller + Service (Flexible Coupon System)
+
+// --- coupon.controller.ts ---
 import { Request, Response } from "express";
 import {
   createCoupon,
@@ -7,21 +10,29 @@ import {
   updateCoupon,
   verifyCoupon,
 } from "../coupon/coupon.service";
-
 import { CreateCouponSchema } from "./coupon.validation";
+import { EItemType } from "../enrollment/enrollment.model";
+import { Types } from "mongoose";
 
 export const createCouponController = async (req: Request, res: Response) => {
   const parsed = CreateCouponSchema.safeParse(req.body);
 
   if (!parsed.success) {
     return res.status(400).json({
-      message: parsed.error,
+      message: parsed.error.message,
       errors: parsed.error.errors,
     });
   }
 
-  const { code, discountPercentage, expiryDate, usageLimit, isActive, course } =
-    req.body;
+  const {
+    code,
+    discountPercentage,
+    expiryDate,
+    usageLimit,
+    isActive,
+    applicableItemType,
+    applicableItemId,
+  } = parsed.data;
 
   const coupon = await createCoupon({
     code,
@@ -29,7 +40,8 @@ export const createCouponController = async (req: Request, res: Response) => {
     expiryDate,
     usageLimit,
     isActive,
-    course,
+    applicableItemType,
+    applicableItemId: new Types.ObjectId(applicableItemId),
   });
 
   return res.status(201).json({
@@ -40,9 +52,10 @@ export const createCouponController = async (req: Request, res: Response) => {
 };
 
 export const getAllCouponsController = async (req: Request, res: Response) => {
-  const { course, activeOnly } = req.query;
+  const { applicableItemType, applicableItemId, activeOnly } = req.query;
   const result = await getAllCoupons({
-    course: course as string,
+    applicableItemType: applicableItemType as EItemType,
+    applicableItemId: applicableItemId as string,
     activeOnly: activeOnly === "true",
   });
 
@@ -68,20 +81,21 @@ export const updateCouponController = async (req: Request, res: Response) => {
 };
 
 export const verifyCouponController = async (req: Request, res: Response) => {
-  const { code, courseId } = req.query;
+  const { code, items } = req.body;
 
-  if (!code || !courseId)
-    return res
-      .status(400)
-      .json({ message: "Coupon code and courseId are required" });
+  if (!code || !Array.isArray(items)) {
+    return res.status(400).json({ message: "Invalid request" });
+  }
 
-  const discount = await verifyCoupon(code as string, courseId as any);
-
-  return res.json({
-    success: true,
-    valid: true,
-    discountPercentage: discount,
-  });
+  try {
+    const discount = await verifyCoupon(code, items);
+    return res.json({ valid: true, discountPercentage: discount });
+  } catch (err: any) {
+    return res.status(400).json({
+      valid: false,
+      message: err.message || "Invalid coupon",
+    });
+  }
 };
 
 // ❗Do NOT expose validateCoupon as a public route – it increments usage count.

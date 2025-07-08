@@ -14,7 +14,7 @@ export const recordManualPaymentController = async (
 ) => {
   try {
     const parsed = CreatePaymentSchema.safeParse(req.body);
-
+    console.log("PARSESD: ", parsed.error, parsed.success);
     if (!parsed.success)
       return res.status(400).json({
         success: false,

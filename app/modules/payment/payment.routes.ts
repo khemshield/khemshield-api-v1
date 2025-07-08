@@ -12,11 +12,7 @@ const router = Router();
 router.use(requireAuth, checkRole(UserRole.Admin));
 
 // POST /api/payments/manual
-router.post(
-  "/manual",
-
-  recordManualPaymentController
-);
+router.post("/manual", recordManualPaymentController);
 
 // GET /api/payments/user/:userId
 router.get("/user/:userId", fetchPaymentssByUser);
