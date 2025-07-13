@@ -1,5 +1,3 @@
-// ✅ Updated: Full Coupon Controller + Service (Flexible Coupon System)
-
 // --- coupon.controller.ts ---
 import { Request, Response } from "express";
 import {

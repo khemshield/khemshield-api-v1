@@ -12,8 +12,15 @@ import { UserRole } from "./user.model";
 
 const router = express.Router();
 
-router.use(requireAuth, checkRole(UserRole.Admin));
-router.get("/search", searchUsersController); // optional: checkRole(UserRole.Admin)
+router.use(requireAuth);
+
+router.get(
+  "/search",
+  checkRole(UserRole.Admin, UserRole.Instructor),
+  searchUsersController
+);
+
+router.use(checkRole(UserRole.Admin));
 router.post("/", createUserController);
 router.get("/", getUsersController);
 router.get("/:id", getUserController);

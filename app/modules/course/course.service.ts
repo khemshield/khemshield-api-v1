@@ -5,9 +5,35 @@ import Course, { CourseStatus, ICourse, Visibility } from "./course.model";
 import { generateCourseCreatedEmailHTMLTemp } from "../../utils/emailService/mail_templates/generateCourseCreatedEmailHTMLTemp";
 import sendEmail from "../../utils/emailService/sendEmail";
 import { CLIENT_BASE_URL } from "../../config/contants";
+import PredefinedCourse from "../predefined-courses/predefinedCourse.model";
+import { AppError } from "../../utils/errors";
+
 // Create course
 export const createCourse = async (data: Partial<ICourse>, user: IUser) => {
-  const course = new Course(data);
+  // TODO: Use predefined id to find
+  const foundPredefinedCourse = await PredefinedCourse.findOne({
+    title: data.topic,
+    // category: data.category,
+  });
+
+  if (!foundPredefinedCourse) {
+    throw new AppError("Couldn't find template for this course", 404);
+  }
+
+  const course = new Course({
+    ...data,
+    price: foundPredefinedCourse.basePrice,
+  });
+
+  console.log(
+    "RECEIVED DATA: ",
+    {
+      ...data,
+      price: foundPredefinedCourse.basePrice,
+    },
+    data.curriculum?.sections,
+    data.curriculum?.sections[0].lectures
+  );
 
   await sendEmail({
     email: user.email,
@@ -18,7 +44,7 @@ export const createCourse = async (data: Partial<ICourse>, user: IUser) => {
       category: course.category,
       thumbnail: course.thumbnail, // Make sure it's a full URL
       createdAt: course.createdAt?.toISOString() || new Date().toISOString(),
-      courseLink: `${CLIENT_BASE_URL}/courses/${course.slug}`,
+      courseLink: `${CLIENT_BASE_URL}/courses/${course._id}`,
       userName: `${user.firstName} ${user.lastName}`,
     }),
   });
@@ -84,6 +110,8 @@ export const updateCourse = async (
 ): Promise<ICourse | null> => {
   const course = await Course.findById(id);
 
+  console.log("COURSE: ", course);
+
   if (!course) return null;
 
   // Versioning: increment version only if course is published and meaningful fields change
@@ -118,7 +146,7 @@ export const updateCourse = async (
   // Apply updates
   Object.assign(course, data);
 
-  return course.save();
+  return await course.save();
 };
 
 // Delete course

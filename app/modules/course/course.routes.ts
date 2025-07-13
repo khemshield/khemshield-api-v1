@@ -30,6 +30,7 @@ router.use(requireAuth);
 router.post("/", createCourseController);
 router.post("/check-existence", checkCourseExistenceController);
 router.patch("/:id", updateCourseController);
+router.put("/:id", updateCourseController);
 router.delete("/:id", deleteCourseController);
 
 // @route   GET /api/courses/user/:userId

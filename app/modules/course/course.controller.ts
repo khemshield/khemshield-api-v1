@@ -15,7 +15,7 @@ import { CourseStatus, Visibility } from "./course.model";
 import { Types } from "mongoose";
 import asyncHandler from "express-async-handler";
 
-// Create Course
+// POST /courses
 export const createCourseController = async (req: Request, res: Response) => {
   try {
     const parsed = CourseSchema.safeParse(req.body); // Validated payload
@@ -27,7 +27,8 @@ export const createCourseController = async (req: Request, res: Response) => {
     const { category, topic } = parsed.data;
 
     // Optional: Prevent duplicates
-    const exists = await courseExists({ topic, category });
+    const { exists } = await courseExists({ topic, category });
+
     if (exists)
       return res.status(409).json({ message: "Course already being managed" });
 
@@ -37,7 +38,7 @@ export const createCourseController = async (req: Request, res: Response) => {
       {
         ...req.body,
         // Securely inject leadInstructor from authenticated user
-        leadInstructor: currentUser._id,
+        leadInstructor: new Types.ObjectId(currentUser._id as Types.ObjectId),
       },
       currentUser
     );
@@ -46,6 +47,25 @@ export const createCourseController = async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Create Course Error:", err);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+// PUT /courses/:id
+export const updateCourseController = async (req: Request, res: Response) => {
+  try {
+    const parsed = CourseSchema.safeParse(req.body); // Validated payload
+
+    if (!parsed.success) {
+      return res.status(400).json({ errors: parsed.error.errors });
+    }
+
+    const course = await updateCourse(req.params.id, req.body);
+    if (!course) return res.status(404).json({ message: "Course not found" });
+
+    res.json(course);
+  } catch (err) {
+    console.log("ERROR updating course :", err);
+    res.status(500).json({ message: "Error updating course" });
   }
 };
 
@@ -119,18 +139,6 @@ export const getCourseBySlugController = async (
     res.json(course);
   } catch (err) {
     res.status(500).json({ message: "Error fetching course" });
-  }
-};
-
-// Update Course
-export const updateCourseController = async (req: Request, res: Response) => {
-  try {
-    const course = await updateCourse(req.params.id, req.body);
-    if (!course) return res.status(404).json({ message: "Course not found" });
-
-    res.json(course);
-  } catch (err) {
-    res.status(500).json({ message: "Error updating course" });
   }
 };
 
